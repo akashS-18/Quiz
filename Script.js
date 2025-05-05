@@ -1,82 +1,77 @@
-const questions = [
-    {
-        question: "What is the capital of France?",
-        options: ["Berlin", "Madrid", "Paris", "Rome"],
-        correct: 2
-    },
-    {
-        question: "Which planet is known as the Red Planet?",
-        options: ["Earth", "Mars", "Jupiter", "Venus"],
-        correct: 1
-    },
-    {
-        question: "Who wrote 'To Kill a Mockingbird'?",
-        options: ["Harper Lee", "Jane Austen", "Charles Dickens", "Mark Twain"],
-        correct: 0
-    }
-];
 
-let currentQuestionIndex = 0;
+const questionsDB = {
+  math: [
+    {
+      question: "What is 5 + 7?",
+      options: ["10", "11", "12", "13"],
+      answer: "12",
+    },
+    {
+      question: "What is the square root of 81?",
+      options: ["9", "8", "7", "6"],
+      answer: "9",
+    },
+  ],
+  science: [
+    {
+      question: "What planet is known as the Red Planet?",
+      options: ["Earth", "Mars", "Jupiter", "Venus"],
+      answer: "Mars",
+    },
+  ],
+  history: [
+    {
+      question: "Who was the first president of the United States?",
+      options: ["Abraham Lincoln", "George Washington", "John Adams", "Thomas Jefferson"],
+      answer: "George Washington",
+    },
+  ],
+};
+
+let currentSubject = "math";
+let currentIndex = 0;
 let score = 0;
 
-function displayQuestion() {
-    const questionData = questions[currentQuestionIndex];
-    const questionContainer = document.getElementById("question-container");
-    questionContainer.innerHTML = `
-        <h2>${questionData.question}</h2>
-        ${questionData.options
-            .map((option, index) => 
-                `<div class="answer" onclick="selectAnswer(${index})">${option}</div>`
-            )
-            .join("")}
-    `;
-}
+const subjectSelector = document.getElementById("subject-selector");
+const questionEl = document.getElementById("question");
+const optionsContainer = document.getElementById("options-container");
+const nextBtn = document.getElementById("next-btn");
+const scoreEl = document.getElementById("score");
 
-function selectAnswer(selectedIndex) {
-    const questionData = questions[currentQuestionIndex];
-    if (selectedIndex === questionData.correct) {
-        score++;
-    }
-    const answers = document.querySelectorAll(".answer");
-    answers.forEach((answer, index) => {
-        answer.style.pointerEvents = 'none'; // Disable further clicks on options
-        if (index === questionData.correct) {
-            answer.style.backgroundColor = "#28a745"; // Green for correct answer
-        } else if (index === selectedIndex) {
-            answer.style.backgroundColor = "#dc3545"; // Red for wrong answer
-        }
-    });
-    document.getElementById("next-button").disabled = false;
-}
+subjectSelector.addEventListener("change", (e) => {
+  currentSubject = e.target.value;
+  currentIndex = 0;
+  score = 0;
+  scoreEl.textContent = "Score: 0";
+  loadQuestion();
+});
 
-function nextQuestion() {
-    currentQuestionIndex++;
-    if (currentQuestionIndex < questions.length) {
-        displayQuestion();
-        document.getElementById("next-button").disabled = true;
-    } else {
-        showResult();
-    }
-}
+nextBtn.addEventListener("click", () => {
+  currentIndex++;
+  if (currentIndex < questionsDB[currentSubject].length) {
+    loadQuestion();
+  } else {
+    questionEl.textContent = "Quiz Completed!";
+    optionsContainer.innerHTML = "";
+    nextBtn.disabled = true;
+  }
+});
 
-function showResult() {
-    const resultContainer = document.getElementById("result-container");
-    const resultText = document.getElementById("result-text");
-    resultText.innerText = `You scored ${score} out of ${questions.length}!`;
-    document.getElementById("quiz").style.display = "none";
-    resultContainer.style.display = "block";
-}
+function loadQuestion() {
+  const current = questionsDB[currentSubject][currentIndex];
+  questionEl.textContent = current.question;
+  optionsContainer.innerHTML = "";
 
-function restartQuiz() {
-    currentQuestionIndex = 0;
-    score = 0;
-    document.getElementById("quiz").style.display = "block";
-    document.getElementById("result-container").style.display = "none";
-    displayQuestion();
-    document.getElementById("next-button").disabled = true;
+  current.options.forEach((option) => {
+    const btn = document.createElement("button");
+    btn.textContent = option;
+    btn.onclick = () => {
+      if (option === current.answer) {
+        score++;
+        scoreEl.textContent = `Score: ${score}`;
+      }
+      nextBtn.click();
+    };
+    optionsContainer.appendChild(btn);
+  });
 }
-
-window.onload = function() {
-    displayQuestion();
-    document.getElementById("next-button").disabled = true;
-};
